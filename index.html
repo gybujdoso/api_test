@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        *{
+            box-sizing: border-box;
+        }
+        #container-fluid{
+            max-width: 1400px;
+        }
+    </style>
+    <title>Document</title>
+</head>
+<body>
+
+    <div class="container-fluid mb-5">
+        <h1 class="display-1">Adatkezelés</h1>
+        <div class="row">
+            <div class="col-6">
+                <form onsubmit="event.preventDefault();">
+                    <div class="mb-3">
+                      <label for="title" class="form-label">Title</label>
+                      <input type="text" class="form-control" id="title" aria-describedby="titleHelp">
+                      <div id="titleHelp" class="form-text">A címben törekedj a rövid, kifejező tartalomra.</div>
+                    </div>
+                    <div class="mb-3">
+                      <label for="body" class="form-label">Body</label>
+                      <input type="text" class="form-control" id="body">
+                    </div>
+                   
+                    <button type="submit" onclick="beKuld()" class="btn btn-primary" id="submit">Submit</button>
+                  </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="adatok" class="container-fluid">
+
+    </div>
+
+    <script>
+        json={};
+        url= 'https://jsonplaceholder.typicode.com/posts';
+        szerkesztes=false;
+        function beKuld()
+        {
+            console.log("Form feldolgozása");
+        }
+
+        async function getPosts(url)
+        {
+           let response = await fetch(url); /* lekért adatra várok és változóba mentem;fetch: url-t lekérem */
+           //console.log(response);
+           let content = response.json(); /*ha megkaptam a választ 'response' */
+           //console.log(content);
+        }
+        getPosts('https://jsonplaceholder.typicode.com/posts');
+        
+       fetch(url)
+      .then(response => response.json())
+      .then(adatHalmaz => listaz(adatHalmaz));
+
+        function listaz(adatHalmaz)
+        {
+            json=adatHalmaz;
+            console.log(typeof(json));
+            console.log(json);
+            //json[200]="cica";
+            // for (const key in json) {
+            //     console.log(json[key]);                    
+            //     }
+            let s='<div class="row">';
+            // for (const key in json[0]) {
+                // s+=`<div class="col">${key}</div>`;
+                // s+='<div class="col">'+key+'</div>';                    
+            // }
+            s+=`<div class="col-1">Id</div>`;
+            s+=`<div class="col-1">UserId</div>`;
+            s+=`<div class="col-2">Title</div>`;
+            s+=`<div class="col-6">Body</div>`;
+            s+='<div class="col-1"></div>';            
+            s+='<div class="col-1"></div>';            
+            s+='</div>';
+           
+            json.forEach(sor => {
+               
+                // for (const key in sor) {
+                //     s+=`<div class="col">${sor[key]}</div>`;                        
+                // }
+                s+='<div class="row my-3">';
+                s+=`<div class="col-1">${sor.id}</div>`;
+                s+=`<div class="col-1">${sor['userId']}</div>`;              
+                s+=`<div class="col-2">${sor.title}</div>`;
+                s+=`<div class="col-6">${sor.body}Body</div>`;
+                s+=`<div class="col-1">
+                <button type="button" data-id="${sor.id}" class="btn btn-warning edit">
+                    Szerkesztés</button>
+                </div>`;
+                s+=`<div class="col-1">
+                    <button type="button" data-id="${sor.id}" class="btn btn-danger delete">
+                    Törlés</button>
+                    </div>`;
+                s+='</div>'; //sor lezárása
+                //console.log(sor);
+            });
+ 
+            document.getElementById("adatok").innerHTML=s;
+
+            var gombok = document.getElementsByClassName("edit");
+
+            for(let i = 0; i < gombok.length; i++){ /* eseménykezelő*/
+            gombok[i].onclick=edit; /* eseménykezelő*/
+            }
+            gombok = document.getElementsByClassName("delete");
+            for(let i = 0; i < gombok.length; i++){
+            gombok[i].onclick=torles;
+            }
+        }
+        function edit()
+        {
+            console.log("Szerkesztés: "+this.dataset.id);
+            hely=keres(this.dataset.id);
+            if(hely!=-1)
+            {
+                szerkesztes=true;
+                document.getElementById('title').value=json[hely].title;
+                document.getElementById('body').value=json[hely].body;
+                document.getElementById('submit').innerHTML="Update";
+            }
+        }
+
+        function keres(ids)
+        {
+            var i=-1;
+            for(let j = 0; j < json.length; j++)
+            {
+                if (json[j].id==ids)
+                {
+                    i=j;
+                    break;
+                };
+            }
+            return i;
+        }
+
+        function torles()
+        {
+            fetch(`${url}/${this.dataset.id}`,{method: DELETE}); /* Küldök egy kérést a webcímre, a methoddal, hogy törölje a számmal jelölt postot */
+            // .then((response) => console.log(response));
+
+            // sikerélmény
+            json.splice(keres(this.dataset.id),1);
+            // sikerélmény vége
+                             
+            listaz(json);
+            console.log("Törlés: "+this.dataset.id);
+        }
+       
+    </script>
+</body>
+</html>
